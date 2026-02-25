@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLink | Placement Interaction System</title>
+    <title>CampusLink | Unified Placement Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .pastel-bg { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
-        .animate-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #faf9f8; }
+        .pastel-gradient { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .tab-active { background: white; color: #4f46e5; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    </script>
 </head>
-<body class="bg-[#faf9f8] text-slate-800">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
@@ -26,85 +26,118 @@
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [userRole, setUserRole] = useState(null);
             const [activeTab, setActiveTab] = useState("Dashboard");
+            
+            // Shared Data State
+            const [jobs, setJobs] = useState([
+                { id: 1, name: "Google", role: "Software Engineer", loc: "Remote", color: "bg-blue-50" },
+                { id: 2, name: "Microsoft", role: "Data Analyst", loc: "Hyderabad", color: "bg-emerald-50" }
+            ]);
 
-            // --- 1. LOGIN SCREEN ---
+            // --- 1. LOGIN PAGE ---
             const LoginPage = () => {
-                const [selectedRole, setSelectedRole] = useState("Student");
-                
+                const [role, setRole] = useState("Student");
                 return (
-                    <div className="min-h-screen flex items-center justify-center p-6 pastel-bg">
-                        <div className="bg-white/80 backdrop-blur-md p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white">
-                            <div className="text-center mb-10">
-                                <div className="inline-block p-3 rounded-2xl bg-indigo-50 mb-4">
-                                    <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-2xl">C</div>
-                                </div>
+                    <div className="min-h-screen flex items-center justify-center p-6 pastel-gradient">
+                        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white">
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-3xl mx-auto mb-4">C</div>
                                 <h1 className="text-3xl font-extrabold text-slate-900">CampusLink</h1>
-                                <p className="text-slate-500 mt-2 font-medium">Placement Management System</p>
+                                <p className="text-slate-500 font-medium">Placement Management System</p>
                             </div>
-
                             <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl">
-                                    {["Student", "Employer", "Officer", "Admin"].map(role => (
-                                        <button 
-                                            key={role}
-                                            onClick={() => setSelectedRole(role)}
-                                            className={`py-2 text-xs font-bold rounded-xl transition-all ${selectedRole === role ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
-                                        >
-                                            {role}
-                                        </button>
+                                <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl">
+                                    {["Student", "Employer", "Officer", "Admin"].map(r => (
+                                        <button key={r} onClick={() => setRole(r)} className={`py-2 text-xs font-bold rounded-xl transition-all ${role === r ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}>{r}</button>
                                     ))}
                                 </div>
-
-                                <button 
-                                    onClick={() => { setUserRole(selectedRole); setIsLoggedIn(true); }}
-                                    className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg transition-transform active:scale-95"
-                                >
-                                    Enter as {selectedRole}
-                                </button>
+                                <div className="space-y-3">
+                                    <input type="email" placeholder={`${role} Email`} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
+                                    <input type="password" placeholder="Password" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
+                                </div>
+                                <button onClick={() => { setUserRole(role); setIsLoggedIn(true); }} className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg">Login as {role}</button>
                             </div>
                         </div>
                     </div>
                 );
             };
 
-            // --- 2. MAIN DASHBOARD ---
-            const DashboardContent = () => (
-                <div className="animate-in">
-                    <header className="mb-10">
-                        <h2 className="text-4xl font-extrabold text-slate-900">Welcome, {userRole}</h2>
-                        <p className="text-lg text-slate-500 font-medium">University Placement Portal • 2026 Session</p>
-                    </header>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-                            <span className="text-indigo-500 font-bold text-xs uppercase">Active Jobs</span>
-                            <h3 className="text-4xl font-black text-slate-900 mt-2">128</h3>
+            // --- 2. STUDENT VIEW ---
+            const StudentDashboard = () => (
+                <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                            <h3 className="font-bold text-slate-800 mb-4">Application Progress</h3>
+                            <div className="w-full bg-slate-100 h-2 rounded-full"><div className="bg-indigo-500 h-2 rounded-full w-3/4"></div></div>
+                            <p className="text-sm mt-2 text-slate-500">75% of profile completed</p>
                         </div>
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-                            <span className="text-rose-500 font-bold text-xs uppercase">Pending Apps</span>
-                            <h3 className="text-4xl font-black text-slate-900 mt-2">45</h3>
-                        </div>
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-                            <span className="text-emerald-500 font-bold text-xs uppercase">Placed Students</span>
-                            <h3 className="text-4xl font-black text-slate-900 mt-2">840</h3>
+                        <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-lg">
+                            <h3 className="font-bold mb-2">Upcoming Interview</h3>
+                            <p className="text-indigo-100">Microsoft • Tomorrow at 10:00 AM</p>
+                            <button className="mt-4 text-xs font-bold bg-white text-indigo-600 px-4 py-2 rounded-xl">Prepare Now</button>
                         </div>
                     </div>
-
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                        <h3 className="text-xl font-bold mb-6">Recent Postings</h3>
+                    <div className="bg-white p-8 rounded-3xl border border-slate-100">
+                        <h3 className="text-xl font-bold mb-6">Available Jobs</h3>
                         <div className="space-y-4">
-                            {["Google", "Microsoft", "Amazon"].map((company, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                            {jobs.map(job => (
+                                <div key={job.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm">🏢</div>
-                                        <div>
-                                            <h4 className="font-bold text-slate-800">{company}</h4>
-                                            <p className="text-sm text-slate-500">Software Engineering Role</p>
-                                        </div>
+                                        <div className={`w-12 h-12 rounded-xl ${job.color} flex items-center justify-center font-bold`}>{job.name[0]}</div>
+                                        <div><h4 className="font-bold">{job.name}</h4><p className="text-sm text-slate-500">{job.role}</p></div>
                                     </div>
-                                    <button className="text-sm font-bold text-indigo-600 bg-white px-4 py-2 rounded-xl shadow-sm">View Details</button>
+                                    <button className="px-5 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl" onClick={() => alert("Applied!")}>Apply</button>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // --- 3. EMPLOYER VIEW ---
+            const EmployerDashboard = () => {
+                const [title, setTitle] = useState("");
+                return (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-1 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm h-fit">
+                            <h3 className="text-xl font-bold mb-6">Post New Job</h3>
+                            <div className="space-y-4">
+                                <input type="text" placeholder="Job Title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
+                                <button onClick={() => { setJobs([...jobs, {id: Date.now(), name: "Your Corp", role: title, loc: "Remote", color: "bg-purple-50"}]); setTitle(""); alert("Job Posted!"); }} className="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl">Publish Listing</button>
+                            </div>
+                        </div>
+                        <div className="lg:col-span-2 space-y-6">
+                            <h3 className="text-2xl font-bold">Manage Applicants</h3>
+                            {[1, 2].map(i => (
+                                <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center shadow-sm">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-slate-100"></div>
+                                        <div><h4 className="font-bold">Student Candidate {i}</h4><p className="text-sm text-slate-500">Applied for Software Engineer</p></div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button className="text-xs font-bold bg-slate-100 px-4 py-2 rounded-xl">Reject</button>
+                                        <button className="text-xs font-bold bg-indigo-600 text-white px-4 py-2 rounded-xl">Shortlist</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            // --- 4. OFFICER/ADMIN VIEW ---
+            const AdminDashboard = () => (
+                <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 text-center"><p className="text-xs font-bold text-slate-400 mb-1">TOTAL STUDENTS</p><h4 className="text-2xl font-black">2,400</h4></div>
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 text-center"><p className="text-xs font-bold text-slate-400 mb-1">PLACED</p><h4 className="text-2xl font-black text-emerald-600">1,120</h4></div>
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 text-center"><p className="text-xs font-bold text-slate-400 mb-1">PENDING</p><h4 className="text-2xl font-black text-rose-500">1,280</h4></div>
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 text-center"><p className="text-xs font-bold text-slate-400 mb-1">AVG CTC</p><h4 className="text-2xl font-black text-indigo-600">12 LPA</h4></div>
+                    </div>
+                    <div className="bg-white p-8 rounded-3xl border border-slate-100">
+                        <h3 className="text-xl font-bold mb-6">Recent System Activity</h3>
+                        <div className="space-y-4 text-sm">
+                            <div className="p-4 bg-slate-50 rounded-2xl flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-indigo-500"></span> <span>Admin added <b>12 new companies</b> to the portal.</span></div>
+                            <div className="p-4 bg-slate-50 rounded-2xl flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> <span><b>50 students</b> marked as "Placed" in 2026 Batch.</span></div>
                         </div>
                     </div>
                 </div>
@@ -114,31 +147,33 @@
 
             return (
                 <div className="min-h-screen">
-                    <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 px-8 py-4">
+                    <nav className="glass sticky top-0 z-50 px-8 py-4">
                         <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black">C</div>
-                                <h1 className="text-xl font-bold text-slate-900">CampusLink</h1>
+                            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab("Dashboard")}>
+                                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xl">C</div>
+                                <h1 className="text-2xl font-black text-slate-900 tracking-tight">CampusLink</h1>
                             </div>
-                            <div className="flex bg-slate-100 p-1 rounded-xl">
-                                {["Dashboard", "Jobs", "Applications"].map(tab => (
-                                    <button 
-                                        key={tab}
-                                        onClick={() => setActiveTab(tab)}
-                                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
-                                    >
-                                        {tab}
-                                    </button>
+                            <div className="hidden md:flex bg-slate-100 p-1 rounded-2xl">
+                                {["Dashboard", "Jobs", "Applications", "Reports"].map(tab => (
+                                    <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? 'tab-active' : 'text-slate-500'}`}>{tab}</button>
                                 ))}
                             </div>
-                            <button onClick={() => setIsLoggedIn(false)} className="text-xs font-bold text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">Logout</button>
+                            <button onClick={() => setIsLoggedIn(false)} className="text-sm font-bold text-rose-500 hover:bg-rose-50 px-4 py-2 rounded-xl">Logout</button>
                         </div>
                     </nav>
 
                     <main className="max-w-7xl mx-auto p-8 md:p-12">
-                        {activeTab === "Dashboard" ? <DashboardContent /> : (
-                            <div className="py-20 text-center">
-                                <h2 className="text-2xl font-bold text-slate-300">{activeTab} module is coming soon!</h2>
+                        {activeTab === "Dashboard" ? (
+                            <div>
+                                {userRole === "Student" && <StudentDashboard />}
+                                {userRole === "Employer" && <EmployerDashboard />}
+                                {(userRole === "Officer" || userRole === "Admin") && <AdminDashboard />}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
+                                <h2 className="text-4xl mb-4">✨</h2>
+                                <h3 className="text-xl font-bold text-slate-400 uppercase tracking-widest">{activeTab} Page Loaded</h3>
+                                <p className="text-slate-400 mt-2">Connecting to live database for {userRole} view...</p>
                             </div>
                         )}
                     </main>
