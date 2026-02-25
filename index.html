@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLink | Unified Placement Portal</title>
+    <title>CampusLink | Full Placement System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -11,10 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #faf9f8; }
-        .pastel-gradient { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-        .tab-active { background: white; color: #4f46e5; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-    </script>
+        .pastel-bg { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+    </style>
 </head>
 <body>
     <div id="root"></div>
@@ -23,99 +22,219 @@
         const { useState } = React;
 
         const App = () => {
-            const [isLoggedIn, setIsLoggedIn] = useState(false);
-            const [userRole, setUserRole] = useState(null);
+            // --- GLOBAL STATE (The "Database") ---
+            const [user, setUser] = useState(null); // null = not logged in
             const [activeTab, setActiveTab] = useState("Dashboard");
             
-            // Shared Data State
             const [jobs, setJobs] = useState([
-                { id: 1, name: "Google", role: "Software Engineer", loc: "Remote", color: "bg-blue-50" },
-                { id: 2, name: "Microsoft", role: "Data Analyst", loc: "Hyderabad", color: "bg-emerald-50" }
+                { id: 1, company: "Google", role: "Frontend Developer", type: "Full-Time", location: "Remote" },
+                { id: 2, company: "Microsoft", role: "Data Analyst", type: "Internship", location: "Hyderabad" },
+                { id: 3, company: "Ojas Care", role: "Marketing Lead", type: "Full-Time", location: "Bangalore" }
             ]);
 
-            // --- 1. LOGIN PAGE ---
-            const LoginPage = () => {
-                const [role, setRole] = useState("Student");
+            const [applications, setApplications] = useState([
+                { id: 101, jobId: 2, jobRole: "Data Analyst", company: "Microsoft", studentEmail: "student@university.edu", status: "Under Review" }
+            ]);
+
+            // --- LOGIN PAGE ---
+            if (!user) {
+                const handleLogin = (e) => {
+                    e.preventDefault(); // Prevents page reload
+                    const role = e.target.role.value;
+                    const email = e.target.email.value;
+                    setUser({ role, email });
+                    setActiveTab("Dashboard");
+                };
+
                 return (
-                    <div className="min-h-screen flex items-center justify-center p-6 pastel-gradient">
-                        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white">
+                    <div className="min-h-screen flex items-center justify-center p-6 pastel-bg">
+                        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md">
                             <div className="text-center mb-8">
-                                <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-3xl mx-auto mb-4">C</div>
+                                <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-3xl mx-auto mb-4 shadow-lg">C</div>
                                 <h1 className="text-3xl font-extrabold text-slate-900">CampusLink</h1>
-                                <p className="text-slate-500 font-medium">Placement Management System</p>
+                                <p className="text-slate-500 font-medium">Secure Login Portal</p>
                             </div>
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl">
-                                    {["Student", "Employer", "Officer", "Admin"].map(r => (
-                                        <button key={r} onClick={() => setRole(r)} className={`py-2 text-xs font-bold rounded-xl transition-all ${role === r ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}>{r}</button>
-                                    ))}
+                            <form onSubmit={handleLogin} className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Select Your Role</label>
+                                    <select name="role" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-200 font-bold text-slate-700 cursor-pointer">
+                                        <option value="Student">🎓 Student</option>
+                                        <option value="Employer">🏢 Employer</option>
+                                        <option value="Placement Officer">📊 Placement Officer</option>
+                                    </select>
                                 </div>
-                                <div className="space-y-3">
-                                    <input type="email" placeholder={`${role} Email`} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
-                                    <input type="password" placeholder="Password" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                                    <input type="email" name="email" required placeholder="you@example.com" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-200" />
                                 </div>
-                                <button onClick={() => { setUserRole(role); setIsLoggedIn(true); }} className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg">Login as {role}</button>
-                            </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+                                    <input type="password" required placeholder="••••••••" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-200" />
+                                </div>
+                                <button type="submit" className="w-full py-4 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95">
+                                    Secure Login
+                                </button>
+                            </form>
                         </div>
                     </div>
                 );
+            }
+
+            // --- PAGE COMPONENTS ---
+
+            // 1. DASHBOARD PAGE (Different for each role)
+            const RenderDashboard = () => {
+                if (user.role === "Student") {
+                    const myApps = applications.filter(a => a.studentEmail === user.email);
+                    return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-lg">
+                                <h3 className="font-bold text-indigo-200 mb-2">Profile Status</h3>
+                                <h2 className="text-4xl font-black mb-4">Ready to Apply</h2>
+                                <p className="text-indigo-100">Your resume and portfolio are up to date.</p>
+                            </div>
+                            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                                <h3 className="font-bold text-slate-500 mb-2">My Overview</h3>
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="text-slate-800 font-bold text-xl">Active Applications</span>
+                                    <span className="text-3xl font-black text-indigo-600">{myApps.length}</span>
+                                </div>
+                                <button onClick={() => setActiveTab("Jobs")} className="w-full py-3 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-slate-200">Find More Jobs</button>
+                            </div>
+                        </div>
+                    );
+                } else if (user.role === "Employer") {
+                    return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-emerald-600 p-8 rounded-3xl text-white shadow-lg">
+                                <h3 className="font-bold text-emerald-200 mb-2">Company Overview</h3>
+                                <h2 className="text-4xl font-black mb-4">Hiring Active</h2>
+                                <p className="text-emerald-100">You currently have {jobs.length} open positions.</p>
+                            </div>
+                            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                                <h3 className="font-bold text-slate-500 mb-2">Quick Actions</h3>
+                                <p className="text-slate-800 font-bold text-xl mb-4">You have {applications.length} students waiting for review.</p>
+                                <button onClick={() => setActiveTab("Applications")} className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800">Review Applicants</button>
+                            </div>
+                        </div>
+                    );
+                } else {
+                    return ( // Placement Officer
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                                <p className="text-slate-500 font-bold text-sm">Total Open Jobs</p>
+                                <h2 className="text-5xl font-black text-slate-900 mt-2">{jobs.length}</h2>
+                            </div>
+                            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                                <p className="text-slate-500 font-bold text-sm">Total Applications</p>
+                                <h2 className="text-5xl font-black text-indigo-600 mt-2">{applications.length}</h2>
+                            </div>
+                            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                                <p className="text-slate-500 font-bold text-sm">Placement Rate</p>
+                                <h2 className="text-5xl font-black text-emerald-500 mt-2">84%</h2>
+                            </div>
+                        </div>
+                    );
+                }
             };
 
-            // --- 2. STUDENT VIEW ---
-            const StudentDashboard = () => (
-                <div className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                            <h3 className="font-bold text-slate-800 mb-4">Application Progress</h3>
-                            <div className="w-full bg-slate-100 h-2 rounded-full"><div className="bg-indigo-500 h-2 rounded-full w-3/4"></div></div>
-                            <p className="text-sm mt-2 text-slate-500">75% of profile completed</p>
-                        </div>
-                        <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-lg">
-                            <h3 className="font-bold mb-2">Upcoming Interview</h3>
-                            <p className="text-indigo-100">Microsoft • Tomorrow at 10:00 AM</p>
-                            <button className="mt-4 text-xs font-bold bg-white text-indigo-600 px-4 py-2 rounded-xl">Prepare Now</button>
-                        </div>
-                    </div>
-                    <div className="bg-white p-8 rounded-3xl border border-slate-100">
-                        <h3 className="text-xl font-bold mb-6">Available Jobs</h3>
-                        <div className="space-y-4">
-                            {jobs.map(job => (
-                                <div key={job.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl ${job.color} flex items-center justify-center font-bold`}>{job.name[0]}</div>
-                                        <div><h4 className="font-bold">{job.name}</h4><p className="text-sm text-slate-500">{job.role}</p></div>
-                                    </div>
-                                    <button className="px-5 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl" onClick={() => alert("Applied!")}>Apply</button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
+            // 2. JOBS PAGE
+            const RenderJobs = () => {
+                const handleApply = (job) => {
+                    const newApp = { id: Date.now(), jobId: job.id, jobRole: job.role, company: job.company, studentEmail: user.email, status: "Applied" };
+                    setApplications([...applications, newApp]);
+                };
 
-            // --- 3. EMPLOYER VIEW ---
-            const EmployerDashboard = () => {
-                const [title, setTitle] = useState("");
+                const handlePostJob = (e) => {
+                    e.preventDefault();
+                    const newJob = { id: Date.now(), company: "Your Company", role: e.target.role.value, type: e.target.type.value, location: e.target.location.value };
+                    setJobs([...jobs, newJob]);
+                    e.target.reset(); // clear form
+                };
+
                 return (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-1 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm h-fit">
-                            <h3 className="text-xl font-bold mb-6">Post New Job</h3>
-                            <div className="space-y-4">
-                                <input type="text" placeholder="Job Title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
-                                <button onClick={() => { setJobs([...jobs, {id: Date.now(), name: "Your Corp", role: title, loc: "Remote", color: "bg-purple-50"}]); setTitle(""); alert("Job Posted!"); }} className="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl">Publish Listing</button>
-                            </div>
-                        </div>
-                        <div className="lg:col-span-2 space-y-6">
-                            <h3 className="text-2xl font-bold">Manage Applicants</h3>
-                            {[1, 2].map(i => (
-                                <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center shadow-sm">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-slate-100"></div>
-                                        <div><h4 className="font-bold">Student Candidate {i}</h4><p className="text-sm text-slate-500">Applied for Software Engineer</p></div>
+                        {/* Left Side: Job List */}
+                        <div className="lg:col-span-2 space-y-4">
+                            <h2 className="text-2xl font-bold text-slate-900 mb-4">Job Board</h2>
+                            {jobs.map(job => {
+                                const hasApplied = applications.some(a => a.jobId === job.id && a.studentEmail === user.email);
+                                return (
+                                    <div key={job.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div>
+                                            <h3 className="font-bold text-lg text-slate-900">{job.role}</h3>
+                                            <p className="text-slate-500 font-medium">{job.company} • {job.location} • {job.type}</p>
+                                        </div>
+                                        {user.role === "Student" && (
+                                            <button 
+                                                disabled={hasApplied}
+                                                onClick={() => handleApply(job)}
+                                                className={`px-6 py-3 rounded-xl font-bold transition-all ${hasApplied ? 'bg-emerald-100 text-emerald-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md active:scale-95'}`}
+                                            >
+                                                {hasApplied ? "✓ Applied" : "Apply Now"}
+                                            </button>
+                                        )}
+                                        {user.role !== "Student" && (
+                                            <span className="bg-slate-100 text-slate-500 px-4 py-2 rounded-lg text-sm font-bold">Active</span>
+                                        )}
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button className="text-xs font-bold bg-slate-100 px-4 py-2 rounded-xl">Reject</button>
-                                        <button className="text-xs font-bold bg-indigo-600 text-white px-4 py-2 rounded-xl">Shortlist</button>
+                                )
+                            })}
+                        </div>
+                        
+                        {/* Right Side: Post Job Form (Employers Only) */}
+                        {user.role === "Employer" && (
+                            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 h-fit">
+                                <h3 className="font-bold text-lg mb-4">Post a New Role</h3>
+                                <form onSubmit={handlePostJob} className="space-y-4">
+                                    <input type="text" name="role" required placeholder="Job Title (e.g. Developer)" className="w-full p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-indigo-200" />
+                                    <input type="text" name="location" required placeholder="Location" className="w-full p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-indigo-200" />
+                                    <select name="type" className="w-full p-3 bg-slate-50 rounded-xl border-none outline-none font-medium text-slate-600">
+                                        <option value="Full-Time">Full-Time</option>
+                                        <option value="Internship">Internship</option>
+                                    </select>
+                                    <button type="submit" className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800">Publish Job</button>
+                                </form>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            // 3. APPLICATIONS PAGE
+            const RenderApplications = () => {
+                const changeStatus = (appId, newStatus) => {
+                    setApplications(applications.map(app => app.id === appId ? { ...app, status: newStatus } : app));
+                };
+
+                let displayApps = applications;
+                if (user.role === "Student") displayApps = applications.filter(a => a.studentEmail === user.email);
+
+                if (displayApps.length === 0) return <div className="text-center py-20"><h2 className="text-2xl font-bold text-slate-400">No applications found.</h2></div>;
+
+                return (
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900 mb-6">{user.role === "Student" ? "My Applications" : "Student Applicants"}</h2>
+                        <div className="space-y-4">
+                            {displayApps.map(app => (
+                                <div key={app.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                                    <div className="flex-1">
+                                        <h3 className="font-bold text-lg text-slate-900">{app.jobRole} @ {app.company}</h3>
+                                        <p className="text-slate-500 font-medium text-sm">Applicant: {app.studentEmail}</p>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-4">
+                                        <span className={`px-4 py-2 rounded-lg text-sm font-bold ${app.status === 'Hired' ? 'bg-emerald-100 text-emerald-700' : app.status === 'Rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
+                                            Status: {app.status}
+                                        </span>
+                                        
+                                        {/* Action Buttons for Employers/Officers */}
+                                        {user.role !== "Student" && app.status !== "Hired" && app.status !== "Rejected" && (
+                                            <div className="flex gap-2">
+                                                <button onClick={() => changeStatus(app.id, 'Hired')} className="px-4 py-2 bg-emerald-500 text-white text-sm font-bold rounded-xl hover:bg-emerald-600 shadow-sm active:scale-95">Accept</button>
+                                                <button onClick={() => changeStatus(app.id, 'Rejected')} className="px-4 py-2 bg-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-300 shadow-sm active:scale-95">Reject</button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -124,58 +243,41 @@
                 );
             };
 
-            // --- 4. OFFICER/ADMIN VIEW ---
-            const AdminDashboard = () => (
-                <div className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-white p-6 rounded-3xl border border-slate-100 text-center"><p className="text-xs font-bold text-slate-400 mb-1">TOTAL STUDENTS</p><h4 className="text-2xl font-black">2,400</h4></div>
-                        <div className="bg-white p-6 rounded-3xl border border-slate-100 text-center"><p className="text-xs font-bold text-slate-400 mb-1">PLACED</p><h4 className="text-2xl font-black text-emerald-600">1,120</h4></div>
-                        <div className="bg-white p-6 rounded-3xl border border-slate-100 text-center"><p className="text-xs font-bold text-slate-400 mb-1">PENDING</p><h4 className="text-2xl font-black text-rose-500">1,280</h4></div>
-                        <div className="bg-white p-6 rounded-3xl border border-slate-100 text-center"><p className="text-xs font-bold text-slate-400 mb-1">AVG CTC</p><h4 className="text-2xl font-black text-indigo-600">12 LPA</h4></div>
-                    </div>
-                    <div className="bg-white p-8 rounded-3xl border border-slate-100">
-                        <h3 className="text-xl font-bold mb-6">Recent System Activity</h3>
-                        <div className="space-y-4 text-sm">
-                            <div className="p-4 bg-slate-50 rounded-2xl flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-indigo-500"></span> <span>Admin added <b>12 new companies</b> to the portal.</span></div>
-                            <div className="p-4 bg-slate-50 rounded-2xl flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> <span><b>50 students</b> marked as "Placed" in 2026 Batch.</span></div>
-                        </div>
-                    </div>
-                </div>
-            );
-
-            if (!isLoggedIn) return <LoginPage />;
-
+            // --- MAIN LAYOUT (When Logged In) ---
             return (
                 <div className="min-h-screen">
-                    <nav className="glass sticky top-0 z-50 px-8 py-4">
-                        <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab("Dashboard")}>
-                                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xl">C</div>
-                                <h1 className="text-2xl font-black text-slate-900 tracking-tight">CampusLink</h1>
+                    <nav className="glass sticky top-0 z-50 px-6 py-4">
+                        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xl shadow-md">C</div>
+                                <div>
+                                    <h1 className="text-xl font-black text-slate-900 leading-none">CampusLink</h1>
+                                    <p className="text-xs font-bold text-indigo-600">{user.role} Portal</p>
+                                </div>
                             </div>
-                            <div className="hidden md:flex bg-slate-100 p-1 rounded-2xl">
-                                {["Dashboard", "Jobs", "Applications", "Reports"].map(tab => (
-                                    <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? 'tab-active' : 'text-slate-500'}`}>{tab}</button>
+                            
+                            <div className="flex bg-slate-100 p-1.5 rounded-2xl w-full md:w-auto justify-center overflow-x-auto">
+                                {["Dashboard", "Jobs", "Applications"].map(tab => (
+                                    <button 
+                                        key={tab} 
+                                        onClick={() => setActiveTab(tab)} 
+                                        className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                                    >
+                                        {tab}
+                                    </button>
                                 ))}
                             </div>
-                            <button onClick={() => setIsLoggedIn(false)} className="text-sm font-bold text-rose-500 hover:bg-rose-50 px-4 py-2 rounded-xl">Logout</button>
+
+                            <button onClick={() => setUser(null)} className="text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors">
+                                Logout →
+                            </button>
                         </div>
                     </nav>
 
-                    <main className="max-w-7xl mx-auto p-8 md:p-12">
-                        {activeTab === "Dashboard" ? (
-                            <div>
-                                {userRole === "Student" && <StudentDashboard />}
-                                {userRole === "Employer" && <EmployerDashboard />}
-                                {(userRole === "Officer" || userRole === "Admin") && <AdminDashboard />}
-                            </div>
-                        ) : (
-                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
-                                <h2 className="text-4xl mb-4">✨</h2>
-                                <h3 className="text-xl font-bold text-slate-400 uppercase tracking-widest">{activeTab} Page Loaded</h3>
-                                <p className="text-slate-400 mt-2">Connecting to live database for {userRole} view...</p>
-                            </div>
-                        )}
+                    <main className="max-w-6xl mx-auto p-6 md:py-10">
+                        {activeTab === "Dashboard" && <RenderDashboard />}
+                        {activeTab === "Jobs" && <RenderJobs />}
+                        {activeTab === "Applications" && <RenderApplications />}
                     </main>
                 </div>
             );
