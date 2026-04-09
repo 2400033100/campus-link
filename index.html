@@ -1,167 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLink | Professional Placement Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #faf9f8; }
-        .pastel-gradient { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusLink Pro | Enterprise Placement Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #faf9f8; overflow-x: hidden; }
+        .pastel-gradient { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.3); }
+        .sidebar-glass { background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); border-right: 1px solid rgba(0,0,0,0.05); }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState } = React;
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-        const App = () => {
-            const [isLoggedIn, setIsLoggedIn] = useState(false);
-            const [userRole, setUserRole] = useState(null);
-            const [activeTab, setActiveTab] = useState("Dashboard");
+        const App = () => {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [userRole, setUserRole] = useState(null);
+            const [activeTab, setActiveTab] = useState("Dashboard");
+            const [isLoading, setIsLoading] = useState(false);
+            const [jobs, setJobs] = useState([]);
 
-            // --- 1. LOGIN SCREEN ---
-            const LoginPage = () => {
-                const [role, setRole] = useState("Student");
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-6 pastel-gradient">
-                        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-500">
-                            <div className="text-center mb-10">
-                                <div className="inline-block p-4 rounded-3xl bg-indigo-50 mb-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-2xl">C</div>
-                                </div>
-                                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">CampusLink</h1>
-                                <p className="text-slate-500 mt-2 font-medium">Placement Management System</p>
-                            </div>
+            // --- SIMULATED BACKEND ENGINE ---
+            const mockFetchJobs = () => {
+                setIsLoading(true);
+                setTimeout(() => {
+                    setJobs([
+                        { id: 1, name: "Google", role: "Software Engineer", loc: "Remote", package: "45 LPA", color: "bg-blue-50", tags: ["React", "Go"] },
+                        { id: 2, name: "Microsoft", role: "Data Analyst", loc: "Hyderabad", package: "32 LPA", color: "bg-emerald-50", tags: ["Python", "SQL"] },
+                        { id: 3, name: "Apple", role: "UI/UX Designer", loc: "Bangalore", package: "28 LPA", color: "bg-orange-50", tags: ["Figma", "Swift"] },
+                        { id: 4, name: "Netflix", role: "Backend Engineer", loc: "Mumbai", package: "40 LPA", color: "bg-rose-50", tags: ["Node.js", "AWS"] }
+                    ]);
+                    setIsLoading(false);
+                }, 1000);
+            };
 
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl">
-                                    {["Student", "Employer", "Officer", "Admin"].map(r => (
-                                        <button 
-                                            key={r} onClick={() => setRole(r)}
-                                            className={`py-2 text-xs font-bold rounded-xl transition-all ${role === r ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
-                                        >
-                                            {r}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="space-y-4">
-                                    <input type="email" placeholder="University Email" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
-                                    <input type="password" placeholder="Password" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
-                                </div>
-                                <button 
-                                    onClick={() => { setUserRole(role); setIsLoggedIn(true); }}
-                                    className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg transition-transform active:scale-95"
-                                >
-                                    Login as {role}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
+            useEffect(() => {
+                if (isLoggedIn) mockFetchJobs();
+            }, [isLoggedIn]);
 
-            // --- 2. MAIN DASHBOARD ---
-            const MainDashboard = () => (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <header className="mb-10 flex justify-between items-end">
-                        <div>
-                            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">Dashboard</h2>
-                            <p className="text-lg text-slate-500 font-medium">Logged in as <span className="text-indigo-600 uppercase text-sm font-bold">{userRole}</span></p>
-                        </div>
-                        <div className="text-right hidden md:block">
-                            <p className="text-slate-400 text-sm font-bold uppercase">February 2026</p>
-                            <p className="text-slate-900 font-extrabold">Session Active</p>
-                        </div>
-                    </header>
+            // --- UI COMPONENTS ---
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <span className="text-indigo-500 font-bold text-xs uppercase tracking-widest">Active Jobs</span>
-                            <h3 className="text-5xl font-black text-slate-900 mt-2">142</h3>
-                        </div>
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <span className="text-rose-500 font-bold text-xs uppercase tracking-widest">Applied</span>
-                            <h3 className="text-5xl font-black text-slate-900 mt-2">12</h3>
-                        </div>
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <span className="text-emerald-500 font-bold text-xs uppercase tracking-widest">Placed</span>
-                            <h3 className="text-5xl font-black text-slate-900 mt-2">84%</h3>
-                        </div>
-                    </div>
+            const LoginPage = () => {
+                const [role, setRole] = useState("Student");
+                const [email, setEmail] = useState("");
 
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                        <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-xl font-bold text-slate-800">Recent Opportunities</h3>
-                            <button className="text-sm font-bold text-indigo-600 hover:underline">View All</button>
-                        </div>
-                        <div className="space-y-4">
-                            {[
-                                { name: "Google", role: "Software Engineer", loc: "Remote", color: "bg-blue-50" },
-                                { name: "Microsoft", role: "Data Analyst", loc: "Hyderabad", color: "bg-emerald-50" },
-                                { name: "Apple", role: "UI/UX Designer", loc: "Bangalore", color: "bg-orange-50" }
-                            ].map((job, i) => (
-                                <div key={i} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl hover:bg-slate-100 transition-colors cursor-pointer group">
-                                    <div className="flex items-center gap-5">
-                                        <div className={`w-14 h-14 rounded-2xl ${job.color} flex items-center justify-center text-2xl shadow-inner font-bold`}>{job.name[0]}</div>
-                                        <div>
-                                            <h4 className="font-extrabold text-slate-800 text-lg group-hover:text-indigo-600 transition-colors">{job.name}</h4>
-                                            <p className="text-sm text-slate-500 font-medium">{job.role} • {job.loc}</p>
-                                        </div>
-                                    </div>
-                                    <button className="px-6 py-2.5 bg-white text-slate-900 font-bold rounded-xl shadow-sm border border-slate-200 hover:bg-slate-900 hover:text-white transition-all">Details</button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-6 pastel-gradient">
+                        <div className="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md border border-white/50 animate-in fade-in zoom-in duration-500">
+                            <div className="text-center mb-10">
+                                <div className="inline-block p-4 rounded-3xl bg-slate-900 mb-6 shadow-xl">
+                                    <div className="w-12 h-12 flex items-center justify-center text-white font-black text-3xl">C</div>
+                                </div>
+                                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">CampusLink Pro</h1>
+                                <p className="text-slate-500 mt-2 font-medium">Enterprise Placement System</p>
+                            </div>
 
-            if (!isLoggedIn) return <LoginPage />;
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-3 p-2 bg-slate-100 rounded-[2rem]">
+                                    {["Student", "Employer", "Officer", "Admin"].map(r => (
+                                        <button 
+                                            key={r} onClick={() => setRole(r)}
+                                            className={`py-3 text-xs font-bold rounded-2xl transition-all ${role === r ? 'bg-white text-indigo-600 shadow-md transform scale-[1.02]' : 'text-slate-500 hover:text-slate-800'}`}
+                                        >
+                                            {r}
+                                        </button>
+                                    ))}
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <input 
+                                        type="email" 
+                                        placeholder="University Email" 
+                                        className="w-full p-5 bg-slate-50 rounded-2xl border-2 border-transparent outline-none focus:border-indigo-100 focus:bg-white transition-all font-medium" 
+                                    />
+                                    <input 
+                                        type="password" 
+                                        placeholder="Secure Password" 
+                                        className="w-full p-5 bg-slate-50 rounded-2xl border-2 border-transparent outline-none focus:border-indigo-100 focus:bg-white transition-all font-medium" 
+                                    />
+                                </div>
 
-            return (
-                <div className="min-h-screen">
-                    <nav className="glass sticky top-0 z-50 border-b border-slate-100 px-8 py-5">
-                        <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xl">C</div>
-                                <h1 className="text-2xl font-black tracking-tight text-slate-900">CampusLink</h1>
-                            </div>
-                            <div className="hidden md:flex bg-slate-100 p-1 rounded-2xl">
-                                {["Dashboard", "Jobs", "Applications", "Reports"].map(tab => (
-                                    <button 
-                                        key={tab} onClick={() => setActiveTab(tab)}
-                                        className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                                    >
-                                        {tab}
-                                    </button>
-                                ))}
-                            </div>
-                            <button onClick={() => setIsLoggedIn(false)} className="text-sm font-extrabold text-rose-500 px-4 py-2 rounded-xl hover:bg-rose-50 transition-colors">Logout</button>
-                        </div>
-                    </nav>
+                                <button 
+                                    onClick={() => { setUserRole(role); setIsLoggedIn(true); }}
+                                    className="w-full py-5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-[1.5rem] shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3"
+                                >
+                                    Access Portal 
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                                </button>
+                                
+                                <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">v2.0.4 Secure Session</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
 
-                    <main className="max-w-7xl mx-auto p-8 md:p-12">
-                        {activeTab === "Dashboard" ? <MainDashboard /> : (
-                            <div className="py-32 text-center">
-                                <div className="text-6xl mb-6 opacity-20">📂</div>
-                                <h2 className="text-2xl font-bold text-slate-300 uppercase tracking-widest">{activeTab} coming soon</h2>
-                            </div>
-                        )}
-                    </main>
-                </div>
-            );
-        }
+            const Sidebar = () => (
+                <div className="hidden lg:flex flex-col w-72 sidebar-glass h-screen fixed left-0 top-0 p-8 z-40">
+                    <div className="flex items-center gap-3 mb-12">
+                        <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xl">C</div>
+                        <h1 className="text-xl font-black tracking-tight text-slate-900">CampusLink</h1>
+                    </div>
+                    
+                    <nav className="flex-1 space-y-2">
+                        {["Dashboard", "Jobs", "Applications", "Resources", "Settings"].map(tab => (
+                            <button 
+                                key={tab} 
+                                onClick={() => setActiveTab(tab)}
+                                className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-white/50'}`}
+                            >
+                                <div className={`w-2 h-2 rounded-full ${activeTab === tab ? 'bg-indigo-600' : 'bg-transparent'}`}></div>
+                                {tab}
+                            </button>
+                        ))}
+                    </nav>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+                    <div className="mt-auto p-6 bg-indigo-600 rounded-[2rem] text-white">
+                        <p className="text-xs font-bold opacity-80 mb-2">PRO TIP</p>
+                        <p className="text-sm font-bold leading-snug">Keep your GitHub link updated in your profile.</p>
+                    </div>
+                </div>
+            );
+
+            const JobSection = () => (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h3 className="text-2xl font-black text-slate-900">Featured Openings</h3>
+                            <p className="text-slate-500 font-medium">Handpicked for your {userRole} profile</p>
+                        </div>
+                        <button onClick={mockFetchJobs} className="p-3 bg-white rounded-xl shadow-sm hover:rotate-180 transition-all duration-500">
+                            <svg className={`w-5 h-5 text-slate-600 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {isLoading ? (
+                            [1,2,3,4].map(i => <div key={i} className="h-48 w-full bg-slate-200/50 animate-pulse rounded-[2.5rem]"></div>)
+                        ) : (
+                            jobs.map((job) => (
+                                <div key={job.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 card-hover cursor-pointer group">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className={`w-16 h-16 rounded-3xl ${job.color} flex items-center justify-center text-3xl shadow-inner font-black`}>{job.name[0]}</div>
+                                        <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full">{job.package}</span>
+                                    </div>
+                                    <h4 className="font-black text-slate-900 text-xl mb-1 group-hover:text-indigo-600 transition-colors">{job.name}</h4>
+                                    <p className="text-slate-500 font-bold text-sm mb-6">{job.role} • {job.loc}</p>
+                                    <div className="flex gap-2">
+                                        {job.tags.map(tag => <span key={tag} className="text-[10px] font-bold bg-slate-100 text-slate-400 px-3 py-1 rounded-lg uppercase">{tag}</span>)}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            );
+
+            if (!isLoggedIn) return <LoginPage />;
+
+            return (
+                <div className="min-h-screen flex">
+                    <Sidebar />
+                    
+                    <div className="flex-1 lg:pl-72">
+                        <nav className="glass sticky top-0 z-30 px-8 py-6 lg:px-12">
+                            <div className="max-w-6xl mx-auto flex justify-between items-center">
+                                <div className="lg:hidden flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black">C</div>
+                                    <h1 className="font-black text-lg">CampusLink</h1>
+                                </div>
+                                <div className="hidden lg:block relative">
+                                    <input type="text" placeholder="Search companies..." className="bg-slate-100 border-none rounded-2xl py-3 pl-12 pr-6 w-80 text-sm focus:ring-2 focus:ring-indigo-100 transition-all outline-none" />
+                                    <svg className="w-4 h-4 absolute left-4 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <div className="flex items-center gap-6">
+                                    <div className="text-right">
+                                        <p className="text-xs font-black text-slate-400 uppercase tracking-tighter">Auth: {userRole}</p>
+                                        <p className="text-sm font-bold text-slate-900">Prem Nischal</p>
+                                    </div>
+                                    <button onClick={() => setIsLoggedIn(false)} className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </nav>
+
+                        <main className="max-w-6xl mx-auto p-8 lg:p-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                            {activeTab === "Dashboard" ? (
+                                <div>
+                                    <div className="mb-12">
+                                        <h2 className="text-5xl font-black text-slate-900 tracking-tight leading-none mb-4">Hello, Prem! 👋</h2>
+                                        <p className="text-xl text-slate-500 font-medium italic font-serif">"Your career journey is a marathon, not a sprint."</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                                        <div className="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100">
+                                            <span className="font-bold text-xs uppercase opacity-70">Success Rate</span>
+                                            <h3 className="text-5xl font-black mt-2">84%</h3>
+                                            <p className="text-sm mt-4 font-bold">+12% from last month</p>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                                            <span className="text-slate-400 font-bold text-xs uppercase">Upcoming Rounds</span>
+                                            <h3 className="text-5xl font-black text-slate-900 mt-2">03</h3>
+                                            <div className="mt-4 flex -space-x-3">
+                                                <div className="w-8 h-8 rounded-full bg-blue-100 border-2 border-white"></div>
+                                                <div className="w-8 h-8 rounded-full bg-emerald-100 border-2 border-white"></div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                                            <span className="text-slate-400 font-bold text-xs uppercase">New Invitations</span>
+                                            <h3 className="text-5xl font-black text-slate-900 mt-2">07</h3>
+                                            <p className="text-sm mt-4 text-indigo-600 font-bold cursor-pointer">View Inbox →</p>
+                                        </div>
+                                    </div>
+
+                                    <JobSection />
+                                </div>
+                            ) : (
+                                <div className="py-32 text-center">
+                                    <div className="text-8xl mb-8 opacity-10 grayscale">🚀</div>
+                                    <h2 className="text-3xl font-black text-slate-300 uppercase tracking-[0.3em]">{activeTab} Initializing...</h2>
+                                    <p className="text-slate-400 mt-4 font-bold italic">Checking server permissions for {userRole} role</p>
+                                </div>
+                            )}
+                        </main>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
-
