@@ -1,166 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLink | Professional Placement Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #faf9f8; }
-        .pastel-gradient { background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
+const { useState, useEffect } = React;
 
-    <script type="text/babel">
-        const { useState } = React;
+// --- SIMULATED DATABASE ENGINE ---
+// This mimics the delay and behavior of a real Node.js/MongoDB backend
+const MockDB = {
+    jobs: [
+        { id: 1, name: "Google", role: "Software Engineer", loc: "Remote", color: "bg-blue-50" },
+        { id: 2, name: "Microsoft", role: "Data Analyst", loc: "Hyderabad", color: "bg-emerald-50" },
+        { id: 3, name: "Apple", role: "UI/UX Designer", loc: "Bangalore", color: "bg-orange-50" }
+    ],
+    async getJobs() {
+        return new Promise(res => setTimeout(() => res(this.jobs), 800)); // 0.8s "network" delay
+    },
+    async applyForJob(jobId) {
+        return new Promise(res => setTimeout(() => res({ success: true, ref: Math.random().toString(36).toUpperCase() }), 1200));
+    }
+};
 
-        const App = () => {
-            const [isLoggedIn, setIsLoggedIn] = useState(false);
-            const [userRole, setUserRole] = useState(null);
-            const [activeTab, setActiveTab] = useState("Dashboard");
+const App = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState(null);
+    const [activeTab, setActiveTab] = useState("Dashboard");
+    
+    // BACKEND STATE FEATURES
+    const [jobs, setJobs] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isApplying, setIsApplying] = useState(null);
 
-            // --- 1. LOGIN SCREEN ---
-            const LoginPage = () => {
-                const [role, setRole] = useState("Student");
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-6 pastel-gradient">
-                        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-500">
-                            <div className="text-center mb-10">
-                                <div className="inline-block p-4 rounded-3xl bg-indigo-50 mb-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-2xl">C</div>
+    // Effect to "Fetch" data on mount
+    useEffect(() => {
+        if (isLoggedIn) {
+            setIsLoading(true);
+            MockDB.getJobs().then(data => {
+                setJobs(data);
+                setIsLoading(false);
+            });
+        }
+    }, [isLoggedIn]);
+
+    const handleApply = async (jobId) => {
+        setIsApplying(jobId);
+        const result = await MockDB.applyForJob(jobId);
+        if(result.success) {
+            alert(`Application Linked to Database! Ref: ${result.ref}`);
+            setIsApplying(null);
+        }
+    };
+
+    // ... (Your LoginPage Code Remains the Same) ...
+
+    const MainDashboard = () => (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Stats Section */}
+            <header className="mb-10 flex justify-between items-end">
+                <div>
+                    <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">Dashboard</h2>
+                    <p className="text-lg text-slate-500 font-medium">System Status: <span className="text-emerald-500 text-xs font-bold uppercase">● Connected to DB</span></p>
+                </div>
+            </header>
+
+            {/* Simulated Data Loading */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-xl font-bold text-slate-800">Available Opportunities</h3>
+                    {isLoading && <div className="animate-spin h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full"></div>}
+                </div>
+
+                <div className="space-y-4">
+                    {isLoading ? (
+                        [1, 2, 3].map(i => <div key={i} className="h-20 w-full bg-slate-100 animate-pulse rounded-3xl"></div>)
+                    ) : (
+                        jobs.map((job) => (
+                            <div key={job.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl hover:bg-slate-100 transition-all group">
+                                <div className="flex items-center gap-5">
+                                    <div className={`w-14 h-14 rounded-2xl ${job.color} flex items-center justify-center text-2xl shadow-inner font-bold`}>{job.name[0]}</div>
+                                    <div>
+                                        <h4 className="font-extrabold text-slate-800 text-lg">{job.name}</h4>
+                                        <p className="text-sm text-slate-500 font-medium">{job.role} • {job.loc}</p>
+                                    </div>
                                 </div>
-                                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">CampusLink</h1>
-                                <p className="text-slate-500 mt-2 font-medium">Placement Management System</p>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl">
-                                    {["Student", "Employer", "Officer", "Admin"].map(r => (
-                                        <button 
-                                            key={r} onClick={() => setRole(r)}
-                                            className={`py-2 text-xs font-bold rounded-xl transition-all ${role === r ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
-                                        >
-                                            {r}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="space-y-4">
-                                    <input type="email" placeholder="University Email" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
-                                    <input type="password" placeholder="Password" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-100" />
-                                </div>
-                                <button 
-                                    onClick={() => { setUserRole(role); setIsLoggedIn(true); }}
-                                    className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg transition-transform active:scale-95"
+                                <button 
+                                    disabled={isApplying === job.id}
+                                    onClick={() => handleApply(job.id)}
+                                    className={`px-6 py-2.5 font-bold rounded-xl shadow-sm border transition-all ${
+                                        isApplying === job.id ? 'bg-slate-200 text-slate-400' : 'bg-white text-slate-900 hover:bg-slate-900 hover:text-white'
+                                    }`}
                                 >
-                                    Login as {role}
+                                    {isApplying === job.id ? "Syncing..." : "Quick Apply"}
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                );
-            };
-
-            // --- 2. MAIN DASHBOARD ---
-            const MainDashboard = () => (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <header className="mb-10 flex justify-between items-end">
-                        <div>
-                            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">Dashboard</h2>
-                            <p className="text-lg text-slate-500 font-medium">Logged in as <span className="text-indigo-600 uppercase text-sm font-bold">{userRole}</span></p>
-                        </div>
-                        <div className="text-right hidden md:block">
-                            <p className="text-slate-400 text-sm font-bold uppercase">February 2026</p>
-                            <p className="text-slate-900 font-extrabold">Session Active</p>
-                        </div>
-                    </header>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <span className="text-indigo-500 font-bold text-xs uppercase tracking-widest">Active Jobs</span>
-                            <h3 className="text-5xl font-black text-slate-900 mt-2">142</h3>
-                        </div>
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <span className="text-rose-500 font-bold text-xs uppercase tracking-widest">Applied</span>
-                            <h3 className="text-5xl font-black text-slate-900 mt-2">12</h3>
-                        </div>
-                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <span className="text-emerald-500 font-bold text-xs uppercase tracking-widest">Placed</span>
-                            <h3 className="text-5xl font-black text-slate-900 mt-2">84%</h3>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                        <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-xl font-bold text-slate-800">Recent Opportunities</h3>
-                            <button className="text-sm font-bold text-indigo-600 hover:underline">View All</button>
-                        </div>
-                        <div className="space-y-4">
-                            {[
-                                { name: "Google", role: "Software Engineer", loc: "Remote", color: "bg-blue-50" },
-                                { name: "Microsoft", role: "Data Analyst", loc: "Hyderabad", color: "bg-emerald-50" },
-                                { name: "Apple", role: "UI/UX Designer", loc: "Bangalore", color: "bg-orange-50" }
-                            ].map((job, i) => (
-                                <div key={i} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl hover:bg-slate-100 transition-colors cursor-pointer group">
-                                    <div className="flex items-center gap-5">
-                                        <div className={`w-14 h-14 rounded-2xl ${job.color} flex items-center justify-center text-2xl shadow-inner font-bold`}>{job.name[0]}</div>
-                                        <div>
-                                            <h4 className="font-extrabold text-slate-800 text-lg group-hover:text-indigo-600 transition-colors">{job.name}</h4>
-                                            <p className="text-sm text-slate-500 font-medium">{job.role} • {job.loc}</p>
-                                        </div>
-                                    </div>
-                                    <button className="px-6 py-2.5 bg-white text-slate-900 font-bold rounded-xl shadow-sm border border-slate-200 hover:bg-slate-900 hover:text-white transition-all">Details</button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                        ))
+                    )}
                 </div>
-            );
+            </div>
+        </div>
+    );
 
-            if (!isLoggedIn) return <LoginPage />;
-
-            return (
-                <div className="min-h-screen">
-                    <nav className="glass sticky top-0 z-50 border-b border-slate-100 px-8 py-5">
-                        <div className="max-w-7xl mx-auto flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xl">C</div>
-                                <h1 className="text-2xl font-black tracking-tight text-slate-900">CampusLink</h1>
-                            </div>
-                            <div className="hidden md:flex bg-slate-100 p-1 rounded-2xl">
-                                {["Dashboard", "Jobs", "Applications", "Reports"].map(tab => (
-                                    <button 
-                                        key={tab} onClick={() => setActiveTab(tab)}
-                                        className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                                    >
-                                        {tab}
-                                    </button>
-                                ))}
-                            </div>
-                            <button onClick={() => setIsLoggedIn(false)} className="text-sm font-extrabold text-rose-500 px-4 py-2 rounded-xl hover:bg-rose-50 transition-colors">Logout</button>
-                        </div>
-                    </nav>
-
-                    <main className="max-w-7xl mx-auto p-8 md:p-12">
-                        {activeTab === "Dashboard" ? <MainDashboard /> : (
-                            <div className="py-32 text-center">
-                                <div className="text-6xl mb-6 opacity-20">📂</div>
-                                <h2 className="text-2xl font-bold text-slate-300 uppercase tracking-widest">{activeTab} coming soon</h2>
-                            </div>
-                        )}
-                    </main>
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+    // ... (Your Navigation and Return Logic) ...
